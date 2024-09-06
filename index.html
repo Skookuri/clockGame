@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Clock</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .clock {
+      width: 300px;
+      height: 300px;
+      border: 4px solid #333;
+      border-radius: 50%;
+      position: relative;
+    }
+
+    .hand {
+      height: 6px;
+      background: black;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-origin: 0% 50%;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .hour-hand {
+      width: 32.5%;
+      height: 8px;
+      background: black;
+    }
+
+    .minute-hand {
+      width: 50%;
+      height: 6px;
+      background: gray;
+    }
+
+    .second-hand {
+      width: 50%;
+      height: 2px;
+      background: red;
+    }
+
+    /* Clock numbers */
+    .number {
+      position: absolute;
+      width: 50px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .n12 { top: 5px; left: 50%; transform: translateX(-50%); }
+    .n1 { top: 25px; right: 35px; }
+    .n2 { top: 75px; right: 10px; }
+    .n3 { top: 50%; right: 5px; transform: translateY(-50%); }
+    .n4 { bottom: 75px; right: 10px; }
+    .n5 { bottom: 25px; right: 35px; }
+    .n6 { bottom: 5px; left: 50%; transform: translateX(-50%); }
+    .n7 { bottom: 25px; left: 35px; }
+    .n8 { bottom: 75px; left: 10px; }
+    .n9 { top: 50%; left: 5px; transform: translateY(-50%); }
+    .n10 { top: 75px; left: 10px; }
+    .n11 { top: 25px; left: 35px; }
+  </style>
+</head>
+<body class="flex items-center justify-center h-screen bg-gray-100">
+  <div class="clock relative">
+    <!-- Clock numbers -->
+    <div class="number n12">12</div>
+    <div class="number n1">1</div>
+    <div class="number n2">2</div>
+    <div class="number n3">3</div>
+    <div class="number n4">4</div>
+    <div class="number n5">5</div>
+    <div class="number n6">6</div>
+    <div class="number n7">7</div>
+    <div class="number n8">8</div>
+    <div class="number n9">9</div>
+    <div class="number n10">10</div>
+    <div class="number n11">11</div>
+
+    <div id="hour" class="hand hour-hand"></div>
+    <div id="minute" class="hand minute-hand"></div>
+    <div id="second" class="hand second-hand"></div>
+  </div>
+
+  <script>
+    const hourHand = document.getElementById('hour');
+    const minuteHand = document.getElementById('minute');
+    const secondHand = document.getElementById('second');
+
+    let isMouseDown = false;
+    let currentHand = null;
+
+    // Constants to adjust hand angles
+    const HOUR_TO_DEGREE = 360 / 12;
+    const MINUTE_TO_DEGREE = 360 / 60;
+    const SECOND_TO_DEGREE = 360 / 60;
+
+    // Store the current angles for each hand
+    let currentHourAngle = 0;
+    let currentMinuteAngle = 30 * MINUTE_TO_DEGREE;
+    let currentSecondAngle = 45 * SECOND_TO_DEGREE;
+
+    // Update the clock hands' positions
+    const updateClock = () => {
+      hourHand.style.transform = `rotate(${currentHourAngle}deg)`;
+      minuteHand.style.transform = `rotate(${currentMinuteAngle}deg)`;
+      secondHand.style.transform = `rotate(${currentSecondAngle}deg)`;
+    };
+
+    // Get the angle from the event's position
+    const getAngleFromEvent = (e, element) => {
+      const rect = element.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const x = e.clientX - centerX;
+      const y = e.clientY - centerY;
+      return Math.atan2(y, x) * (180 / Math.PI);
+    };
+
+    // Ensure the angle is within 0 to 360 degrees
+    const snapToClock = (angle) => {
+      if (angle < 0) angle += 360;
+      return angle;
+    };
+
+    const handleMouseDown = (e, hand) => {
+      isMouseDown = true;
+      currentHand = hand;
+    };
+
+    const handleMouseMove = (e) => {
+      if (!isMouseDown || !currentHand) return;
+      const angle = snapToClock(getAngleFromEvent(e, currentHand.parentElement));
+
+      if (currentHand === hourHand) {
+        currentHourAngle = angle;
+      } else if (currentHand === minuteHand) {
+        currentMinuteAngle = angle;
+      } else if (currentHand === secondHand) {
+        currentSecondAngle = angle;
+      }
+
+      updateClock(); // Update the clock with new angles
+    };
+
+    const handleMouseUp = () => {
+      isMouseDown = false;
+      currentHand = null;
+    };
+
+    // Event listeners for rotating hands on click
+    hourHand.addEventListener('mousedown', (e) => handleMouseDown(e, hourHand));
+    minuteHand.addEventListener('mousedown', (e) => handleMouseDown(e, minuteHand));
+    secondHand.addEventListener('mousedown', (e) => handleMouseDown(e, secondHand));
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    // Initial clock setting
+    updateClock();
+  </script>
+</body>
+</html>
